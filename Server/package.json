@@ -1,0 +1,18 @@
+{
+  "name": "codexia-server",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "author": "Hetul Mistry",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
