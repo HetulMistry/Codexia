@@ -5,14 +5,18 @@
   "description": "",
   "author": "Hetul Mistry",
   "type": "module",
-  "main": "index.js",
+  "main": "./src/server.ts",
   "scripts": {
+    "dev": "nodemon --exec ts-node ./src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "express": "^5.2.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "@types/express": "^5.0.6",
+    "nodemon": "^3.1.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

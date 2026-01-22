@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Codexia Server</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #181a20; /* Deep dark background */
+        color: #e0e0e0; /* Light gray text */
+      }
+      .container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      .content {
+        text-align: center;
+      }
+      h1 {
+        color: #00bfae; /* Teal accent for heading */
+        margin-bottom: 1rem;
+      }
+      p {
+        color: #e0e0e0; /* Light gray text */
+        margin-bottom: 1rem;
+      }
+      .time {
+        color: #7c7f87; /* Soft gray for secondary text */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="content">
+        <h1>API is up and running!</h1>
+        <p>The Codexia server is set up and ready to go!</p>
+        <p class="time">Current Time: <span id="currentTime"></span></p>
+      </div>
+    </div>
+    <script>
+      document.getElementById("currentTime").innerText =
+        new Date().toLocaleTimeString();
+    </script>
+  </body>
+</html>
