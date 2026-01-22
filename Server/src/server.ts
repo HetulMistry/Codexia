@@ -21,10 +21,23 @@ app.use(express.static(path.join(__dirname, "public"))); // Serve static files
 
 const server = http.createServer(app);
 
-const ioSocket = new Server(server);
+const ioSocket = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+  pingTimeout: 600000,
+});
+
+let userMap = [];
 
 ioSocket.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
+
+  socket.on("joinRoom", (roomId: string) => {
+    socket.join(roomId);
+    console.log(`User ${socket.id} joined room ${roomId}`);
+  });
+
   socket.on("disconnect", () => {
     console.log("A user disconnected:", socket.id);
   });
