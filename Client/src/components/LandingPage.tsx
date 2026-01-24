@@ -12,8 +12,7 @@ const LandingPage: React.FC = () => {
           <span className="text-white font-bold">odexia</span>
         </a>
         {/* Nav Items */}
-        <div className="flex items-center gap-12">
-          {/* Fix the link styling */}
+        <div className="flex items-center gap-10">
           <a
             href="#"
             className="text-white text-lg font-inter font-medium leading-7.5 no-underline focus:outline-none"
@@ -26,13 +25,10 @@ const LandingPage: React.FC = () => {
           >
             Contact Us
           </a>
-          {/* Fix this button */}
-          <button>
-            <div className="px-6 py-3.5 bg-[#71DD83] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] rounded-lg flex items-center gap-2">
-              <div className="text-black text-base font-inter font-medium leading-6">
-                Create Session
-              </div>
-            </div>
+          <button className="px-5 py-3 bg-[#71DD83] rounded-lg flex items-center cursor-pointer hover:opacity-90">
+            <span className="text-black text-base font-inter font-medium leading-6">
+              Create Session
+            </span>
           </button>
         </div>
       </div>
