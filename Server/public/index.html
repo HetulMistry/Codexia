@@ -3,48 +3,188 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Codexia Server</title>
+    <title>Codexia — Server</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
+      :root {
+        --bg-1: #222429; /* Updated background color */
+        --bg-2: #222429; /* Consistent background gradient */
+        --card: rgba(255, 255, 255, 0.04);
+        --muted: #9aa3ae;
+        --accent-1: #71dd83; /* Updated accent color */
+        --accent-2: #71dd83; /* Updated secondary accent color */
+      }
+      html,
       body {
-        font-family: Arial, sans-serif;
+        height: 100%;
+      }
+      body {
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          "Helvetica Neue",
+          Arial;
         margin: 0;
         padding: 0;
-        background-color: #181a20; /* Deep dark background */
-        color: #e0e0e0; /* Light gray text */
-      }
-      .container {
+        background:
+          radial-gradient(
+            1200px 600px at 10% 10%,
+            rgba(34, 36, 41, 0.6),
+            transparent
+          ),
+          linear-gradient(180deg, var(--bg-1), var(--bg-2));
+        color: #e6eef2;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 100vh;
       }
-      .content {
-        text-align: center;
+      .card {
+        width: min(920px, 92%);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          transparent
+        );
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        box-shadow: 0 8px 30px rgba(2, 8, 14, 0.6);
+        border-radius: 12px;
+        padding: 36px;
+        display: flex;
+        gap: 24px;
+        align-items: center;
+      }
+      .logo {
+        width: 84px;
+        height: 84px;
+        flex: 0 0 84px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+        box-shadow:
+          0 6px 18px rgba(113, 221, 131, 0.12),
+          inset 0 -6px 18px rgba(255, 255, 255, 0.06);
+      }
+      .logo svg {
+        width: 48px;
+        height: 48px;
+      }
+      .meta {
+        flex: 1;
       }
       h1 {
-        color: #00bfae; /* Teal accent for heading */
-        margin-bottom: 1rem;
+        margin: 0 0 6px 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: white;
       }
-      p {
-        color: #e0e0e0; /* Light gray text */
-        margin-bottom: 1rem;
+      .subtitle {
+        margin: 0 0 14px 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .status {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .pill {
+        background: rgba(0, 0, 0, 0.25);
+        color: var(--accent-1);
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 13px;
+        border: 1px solid rgba(113, 221, 131, 0.08);
+      }
+      .details {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .right {
+        text-align: right;
+        min-width: 160px;
       }
       .time {
-        color: #7c7f87; /* Soft gray for secondary text */
+        font-weight: 600;
+        color: var(--accent-2);
+      }
+      a.docs {
+        color: var(--accent-1);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      @media (max-width: 640px) {
+        .card {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .right {
+          text-align: left;
+          width: 100%;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="content">
-        <h1>API is up and running!</h1>
-        <p>The Codexia server is set up and ready to go!</p>
-        <p class="time">Current Time: <span id="currentTime"></span></p>
+    <div class="card" role="main">
+      <div class="logo" aria-hidden="true">
+        <svg
+          viewBox="0 0 64 64"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <rect
+            x="6"
+            y="6"
+            width="52"
+            height="52"
+            rx="10"
+            fill="white"
+            opacity="0.08"
+          />
+          <path d="M20 40 L32 22 L44 40 Z" fill="white" />
+        </svg>
+      </div>
+      <div class="meta">
+        <h1>
+          <span style="color: var(--accent-1)">C</span>odexia API — Running
+        </h1>
+        <p class="subtitle">
+          The Codexia server is live. Use the API endpoints to interact with the
+          platform.
+        </p>
+        <div class="status">
+          <div class="pill">Status: OK</div>
+          <div class="details">Environment: <strong>development</strong></div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="details">Current time</div>
+        <div class="time" id="currentTime">--:--:--</div>
+        <!-- <div style="height: 8px"></div>
+        <div class="details">Docs: <a class="docs" href="#">API Docs</a></div> -->
       </div>
     </div>
+
     <script>
-      document.getElementById("currentTime").innerText =
-        new Date().toLocaleTimeString();
+      function updateTime() {
+        const el = document.getElementById("currentTime");
+        if (!el) return;
+        el.innerText = new Date().toLocaleTimeString();
+      }
+      updateTime();
+      setInterval(updateTime, 1000);
     </script>
   </body>
 </html>
