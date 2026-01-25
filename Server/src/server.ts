@@ -14,16 +14,16 @@ const __dirname = dirname(__filename);
 
 dotenv.config();
 
-const app = express();
+const appServer = express();
 
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, "public"))); // Serve static files
+appServer.use(express.json());
+appServer.use(express.static(path.join(__dirname, "public"))); // Serve static files
 
-const server = http.createServer(app);
+const httpServer = http.createServer(appServer);
 
-const SocketServer = new Server(server, {
+const socketServer = new Server(httpServer, {
   cors: {
     origin: "*",
   },
@@ -32,50 +32,88 @@ const SocketServer = new Server(server, {
 
 let userList: User[] = [];
 
-function fetchUsersByRoomId(roomId: string): User[] {
+const fetchUsersByRoomId = (roomId: string): User[] => {
   return userList.filter((user) => user.roomId == roomId);
-}
+};
 
-SocketServer.on(SocketEvents.Connection, (socket) => {
-  socket.on(SocketEvents.JoinRequest, ({ roomId, username }) => {
+const getUserBySocketId = (socketId: string): User | null => {
+  const user = userList.find((user) => user.sockedId === socketId);
+
+  if (!user) {
+    console.error(`User with socketId: ${socketId} not found`);
+    return null;
+  }
+  return user;
+};
+
+socketServer.on(SocketEvents.Connection, (socketClient) => {
+  // User Action Events
+  socketClient.on(SocketEvents.JoinRequest, ({ roomId, username }) => {
     console.log(`Username: ${username} join in room: ${roomId}`);
+    // Check if username already exists in the room
     const usernameExist = fetchUsersByRoomId(roomId).filter(
-      (u) => u.username === username,
+      (currentUser) => currentUser.username === username,
     );
-
     if (usernameExist.length > 0) {
-      SocketServer.to(socket.id).emit(SocketEvents.UsernameExists);
+      socketServer.to(socketClient.id).emit(SocketEvents.UsernameExists);
       return;
     }
 
+    // Add user to the user list
     const currentUser: User = {
       username,
       roomId,
       status: UserConnectionStatus.Online,
       cursorPosition: 0,
       typing: false,
-      sockedId: socket.id,
+      sockedId: socketClient.id,
       currentFile: null,
     };
-
     userList.push(currentUser);
-    socket.join(roomId);
-    socket.broadcast
+
+    // Notify others in the room about the new user
+    socketClient.join(roomId);
+    socketClient.broadcast
       .to(roomId)
       .emit(SocketEvents.UserJoined, { user: currentUser });
 
+    // Send join accepted event to the current user with active users in the room
     const activeRoomUsers = fetchUsersByRoomId(roomId);
-    SocketServer.to(socket.id).emit(SocketEvents.JoinAccepted, {
+    socketServer.to(socketClient.id).emit(SocketEvents.JoinAccepted, {
       currentUser,
       activeRoomUsers,
     });
+
+    console.log(
+      `User ${currentUser.username} (${currentUser.sockedId})joined the room ${roomId} along with ${activeRoomUsers.length} active users.`,
+    );
   });
+
+  socketClient.on(SocketEvents.Disconnect, () => {
+    // Handle user disconnection
+    const user = getUserBySocketId(socketClient.id);
+    if (!user) return;
+    const roomId = user.roomId;
+
+    // Notify others in the room about the user disconnection
+    socketClient.broadcast
+      .to(roomId)
+      .emit(SocketEvents.UserDisconnected, { user });
+
+    // Remove user from the user list
+    userList = userList.filter((user) => user.sockedId !== socketClient.id);
+    socketClient.leave(roomId);
+
+    console.log(`Socket disconnected: ${socketClient.id}`);
+  });
+
+  //   File Handling Events
 });
 
-app.get("/", (req: Request, res: Response) => {
+appServer.get("/", (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
-server.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
