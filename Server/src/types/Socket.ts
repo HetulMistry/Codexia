@@ -6,6 +6,22 @@ enum SocketEvents {
   JoinAccepted = "join-accepted",
   Disconnect = "disconnect",
   UserDisconnected = "user-disconnected",
+  SyncStructure = "sync-structure",
+  DirectoryUpdated = "directory-updated",
+  DirectoryRename = "directory-rename",
+  DirectoryDelete = "directory-delete",
+  FileCreated = "file-created",
+  FileUpdated = "file-updated",
+  FileRenamed = "file-renamed",
+  FileDeleted = "file-deleted",
+  UserOffline = "user-offline",
+  UserOnline = "user-online",
+  UserTyping = "user-typing",
+  UserCursorMove = "user-cursor-move",
+  UserSendMessage = "user-send-message",
+  UserRequestDrawing = "user-request-drawing",
+  UserDrawingUpdate = "user-drawing-update",
+  UserSyncData = "user-sync-data",
 }
 
 export default SocketEvents;

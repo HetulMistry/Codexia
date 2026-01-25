@@ -14,13 +14,16 @@ const __dirname = dirname(__filename);
 
 dotenv.config();
 
+// Express App Setup
 const appServer = express();
 
 const PORT = process.env.PORT || 3000;
 
+// Middleware
 appServer.use(express.json());
 appServer.use(express.static(path.join(__dirname, "public"))); // Serve static files
 
+// HTTP Server and Socket.io Setup
 const httpServer = http.createServer(appServer);
 
 const socketServer = new Server(httpServer, {
@@ -30,8 +33,10 @@ const socketServer = new Server(httpServer, {
   pingTimeout: 600000,
 });
 
+// In-memory user list
 let userList: User[] = [];
 
+// Helper Functions
 const fetchUsersByRoomId = (roomId: string): User[] => {
   return userList.filter((user) => user.roomId == roomId);
 };
@@ -46,8 +51,20 @@ const getUserBySocketId = (socketId: string): User | null => {
   return user;
 };
 
+const fetchRoomIdForSocket = (socketId: string): string | null => {
+  const roomId = userList.find((user) => user.sockedId === socketId)?.roomId;
+
+  // Check if roomId exists
+  if (!roomId) {
+    console.error(`RoomId for socketId: ${socketId} not found`);
+    return null;
+  }
+  return roomId;
+};
+
+// Socket.io Event Handling
 socketServer.on(SocketEvents.Connection, (socketClient) => {
-  // User Action Events
+  //* User Action Events *//
   socketClient.on(SocketEvents.JoinRequest, ({ roomId, username }) => {
     console.log(`Username: ${username} join in room: ${roomId}`);
     // Check if username already exists in the room
@@ -107,13 +124,81 @@ socketServer.on(SocketEvents.Connection, (socketClient) => {
     console.log(`Socket disconnected: ${socketClient.id}`);
   });
 
-  //   File Handling Events
+  //* Core Events Handling *//
+  // Directory and Structure Sync Events
+  socketClient.on(
+    SocketEvents.SyncStructure,
+    ({ fileStructure, openedFile, activeFile, socketId }) => {
+      // Send updated file structure to the specified socket
+      socketServer.to(socketId).emit(SocketEvents.SyncStructure, {
+        fileStructure,
+        openedFile,
+        activeFile,
+      });
+    },
+  );
+
+  socketClient.on(
+    SocketEvents.DirectoryUpdated,
+    ({ directoryId, children }) => {
+      const roomId = fetchRoomIdForSocket(socketClient.id);
+
+      if (!roomId) return;
+
+      // Broadcast updated directory to other users in the room
+      socketClient.broadcast
+        .to(roomId)
+        .emit(SocketEvents.DirectoryUpdated, { directoryId, children });
+    },
+  );
+
+  socketClient.on(SocketEvents.DirectoryRename, ({ directoryId, newName }) => {
+    const roomId = fetchRoomIdForSocket(socketClient.id);
+
+    if (!roomId) return;
+
+    // Broadcast directory rename to other users in the room
+    socketClient.broadcast
+      .to(roomId)
+      .emit(SocketEvents.DirectoryRename, { directoryId, newName });
+  });
+
+  socketClient.on(SocketEvents.DirectoryDelete, ({ directoryId }) => {
+    const roomId = fetchRoomIdForSocket(socketClient.id);
+
+    if (!roomId) return;
+
+    // Broadcast directory delete to other users in the room
+    socketClient.broadcast
+      .to(roomId)
+      .emit(SocketEvents.DirectoryDelete, { directoryId });
+  });
+
+  // File Events Handling
+  // TODO: Implement the handlers for these events
+  socketClient.on(SocketEvents.FileCreated, () => {});
+  socketClient.on(SocketEvents.FileUpdated, () => {});
+  socketClient.on(SocketEvents.FileRenamed, () => {});
+  socketClient.on(SocketEvents.FileDeleted, () => {});
+
+  // User Activity Events
+  // TODO: Implement the handlers for these events
+  socketClient.on(SocketEvents.UserOffline, () => {});
+  socketClient.on(SocketEvents.UserOnline, () => {});
+  socketClient.on(SocketEvents.UserTyping, () => {});
+  socketClient.on(SocketEvents.UserCursorMove, () => {});
+  socketClient.on(SocketEvents.UserSendMessage, () => {});
+  socketClient.on(SocketEvents.UserRequestDrawing, () => {});
+  socketClient.on(SocketEvents.UserDrawingUpdate, () => {});
+  socketClient.on(SocketEvents.UserSyncData, () => {});
 });
 
+// Express Routes
 appServer.get("/", (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
+// Start the server
 httpServer.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
