@@ -175,14 +175,50 @@ socketServer.on(SocketEvents.Connection, (socketClient) => {
   });
 
   // File Events Handling
-  // TODO: Implement the handlers for these events
-  socketClient.on(SocketEvents.FileCreated, () => {});
-  socketClient.on(SocketEvents.FileUpdated, () => {});
-  socketClient.on(SocketEvents.FileRenamed, () => {});
-  socketClient.on(SocketEvents.FileDeleted, () => {});
+  socketClient.on(
+    SocketEvents.FileCreated,
+    ({ parentDirectoryId, newFile }) => {
+      const roomId = fetchRoomIdForSocket(socketClient.id);
+
+      if (!roomId) return;
+
+      socketClient.broadcast
+        .to(roomId)
+        .emit(SocketEvents.FileCreated, { parentDirectoryId, newFile });
+    },
+  );
+
+  socketClient.on(SocketEvents.FileUpdated, ({ fileId, newContent }) => {
+    const roomId = fetchRoomIdForSocket(socketClient.id);
+
+    if (!roomId) return;
+
+    socketClient.broadcast
+      .to(roomId)
+      .emit(SocketEvents.FileUpdated, { fileId, newContent });
+  });
+
+  socketClient.on(SocketEvents.FileRenamed, ({ fileId, newName }) => {
+    const roomId = fetchRoomIdForSocket(socketClient.id);
+
+    if (!roomId) return;
+
+    socketClient.broadcast
+      .to(roomId)
+      .emit(SocketEvents.FileRenamed, { fileId, newName });
+  });
+
+  socketClient.on(SocketEvents.FileDeleted, ({ fileId }) => {
+    const roomId = fetchRoomIdForSocket(socketClient.id);
+
+    if (!roomId) return;
+
+    socketClient.broadcast
+      .to(roomId)
+      .emit(SocketEvents.FileDeleted, { fileId });
+  });
 
   // User Activity Events
-  // TODO: Implement the handlers for these events
   socketClient.on(SocketEvents.UserOffline, ({ clientSocketId }) => {
     userList = userList.map((user) => {
       if (user.sockedId == clientSocketId)
@@ -253,6 +289,7 @@ socketServer.on(SocketEvents.Connection, (socketClient) => {
       .emit(SocketEvents.UserTypingPause, { sessionUser });
   });
 
+  // TODO: Implement the handlers for these events
   socketClient.on(SocketEvents.UserCursorMove, () => {});
   socketClient.on(SocketEvents.UserSendMessage, () => {});
   socketClient.on(SocketEvents.UserRequestDrawing, () => {});
