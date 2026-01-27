@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import type { Request, Response } from "express";
 import SocketEvents from "./types/Socket.ts";
 import { User, UserConnectionStatus } from "./types/User.ts";
+import { emit } from "cluster";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -289,12 +290,66 @@ socketServer.on(SocketEvents.Connection, (socketClient) => {
       .emit(SocketEvents.UserTypingPause, { sessionUser });
   });
 
-  // TODO: Implement the handlers for these events
-  socketClient.on(SocketEvents.UserCursorMove, () => {});
-  socketClient.on(SocketEvents.UserSendMessage, () => {});
-  socketClient.on(SocketEvents.UserRequestDrawing, () => {});
-  socketClient.on(SocketEvents.UserDrawingUpdate, () => {});
-  socketClient.on(SocketEvents.UserSyncData, () => {});
+  socketClient.on(
+    SocketEvents.UserCursorMove,
+    ({ cursorPosition, selectionStart, selectionEnd }) => {
+      userList = userList.map((user) => {
+        if (user.sockedId == socketClient.id)
+          return {
+            ...user,
+            cursorPosition,
+            selectionStart,
+            selectionEnd,
+          };
+        return user;
+      });
+
+      const sessionUser = getUserBySocketId(socketClient.id);
+      if (!sessionUser) return;
+
+      const roomId = sessionUser.roomId;
+
+      socketClient.broadcast
+        .to(roomId)
+        .emit(SocketEvents.UserCursorMove, { sessionUser });
+    },
+  );
+
+  socketClient.on(SocketEvents.UserSendMessage, ({ message }) => {
+    const roomId = fetchRoomIdForSocket(socketClient.id);
+
+    if (!roomId) return;
+
+    socketClient.broadcast
+      .to(roomId)
+      .emit(SocketEvents.UserReceiveMessage, { message });
+  });
+
+  socketClient.on(SocketEvents.UserRequestDrawing, () => {
+    const roomId = fetchRoomIdForSocket(socketClient.id);
+
+    if (!roomId) return;
+
+    socketClient.broadcast
+      .to(roomId)
+      .emit(SocketEvents.UserRequestDrawing, { socketId: socketClient.id });
+  });
+
+  socketClient.on(SocketEvents.UserDrawingUpdate, ({ snapshot }) => {
+    const roomId = fetchRoomIdForSocket(socketClient.id);
+
+    if (!roomId) return;
+
+    socketClient.broadcast
+      .to(roomId)
+      .emit(SocketEvents.UserDrawingUpdate, { snapshot });
+  });
+
+  socketClient.on(SocketEvents.UserSyncDrawing, ({ drawingData, socketId }) => {
+    socketClient.broadcast
+      .to(socketId)
+      .emit(SocketEvents.UserSyncDrawing, { drawingData });
+  });
 });
 
 // Express Routes

@@ -20,9 +20,10 @@ enum SocketEvents {
   UserTypingPause = "user-typing-pause",
   UserCursorMove = "user-cursor-move",
   UserSendMessage = "user-send-message",
+  UserReceiveMessage = "user-receive-message",
   UserRequestDrawing = "user-request-drawing",
   UserDrawingUpdate = "user-drawing-update",
-  UserSyncData = "user-sync-data",
+  UserSyncDrawing = "user-sync-drawing",
 }
 
 export default SocketEvents;
