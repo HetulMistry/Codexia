@@ -191,14 +191,28 @@ socketServer.on(SocketEvents.Connection, (socketClient) => {
     });
 
     const roomId = fetchRoomIdForSocket(clientSocketId);
-
     if (!roomId) return;
+
     socketClient.broadcast
       .to(roomId)
       .emit(SocketEvents.UserOffline, { socketId: clientSocketId });
   });
 
-  socketClient.on(SocketEvents.UserOnline, () => {});
+  socketClient.on(SocketEvents.UserOnline, ({ clientSocketId }) => {
+    userList = userList.map((user) => {
+      if (user.sockedId == clientSocketId)
+        return { ...user, status: UserConnectionStatus.Online };
+      return user;
+    });
+
+    const roomId = fetchRoomIdForSocket(clientSocketId);
+    if (!roomId) return;
+
+    socketClient.broadcast
+      .to(roomId)
+      .emit(SocketEvents.UserOnline, { socketId: clientSocketId });
+  });
+
   socketClient.on(SocketEvents.UserTyping, () => {});
   socketClient.on(SocketEvents.UserCursorMove, () => {});
   socketClient.on(SocketEvents.UserSendMessage, () => {});
