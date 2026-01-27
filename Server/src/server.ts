@@ -183,7 +183,21 @@ socketServer.on(SocketEvents.Connection, (socketClient) => {
 
   // User Activity Events
   // TODO: Implement the handlers for these events
-  socketClient.on(SocketEvents.UserOffline, () => {});
+  socketClient.on(SocketEvents.UserOffline, ({ clientSocketId }) => {
+    userList = userList.map((user) => {
+      if (user.sockedId == clientSocketId)
+        return { ...user, status: UserConnectionStatus.Offline };
+      return user;
+    });
+
+    const roomId = fetchRoomIdForSocket(clientSocketId);
+
+    if (!roomId) return;
+    socketClient.broadcast
+      .to(roomId)
+      .emit(SocketEvents.UserOffline, { socketId: clientSocketId });
+  });
+
   socketClient.on(SocketEvents.UserOnline, () => {});
   socketClient.on(SocketEvents.UserTyping, () => {});
   socketClient.on(SocketEvents.UserCursorMove, () => {});
