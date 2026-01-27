@@ -4,7 +4,7 @@ type User = {
   status: UserConnectionStatus;
   cursorPosition: number;
   typing: boolean;
-  sockedId: string;
+  socketId: string;
   currentFile: string | null;
 };
 
