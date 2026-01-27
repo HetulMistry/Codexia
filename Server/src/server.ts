@@ -213,7 +213,46 @@ socketServer.on(SocketEvents.Connection, (socketClient) => {
       .emit(SocketEvents.UserOnline, { socketId: clientSocketId });
   });
 
-  socketClient.on(SocketEvents.UserTyping, () => {});
+  socketClient.on(
+    SocketEvents.UserTypingStart,
+    ({ cursorPosition, selectionStart, selectionEnd }) => {
+      userList = userList.map((user) => {
+        if (user.sockedId == socketClient.id)
+          return {
+            ...user,
+            typing: true,
+            cursorPosition: cursorPosition,
+            selectionStart,
+            selectionEnd,
+          };
+        return user;
+      });
+
+      const sessionUser = getUserBySocketId(socketClient.id);
+      if (!sessionUser) return;
+
+      const roomId = sessionUser.roomId;
+      socketClient.broadcast
+        .to(roomId)
+        .emit(SocketEvents.UserTypingStart, { sessionUser });
+    },
+  );
+
+  socketClient.on(SocketEvents.UserTypingPause, () => {
+    userList = userList.map((user) => {
+      if (user.sockedId == socketClient.id) return { ...user, typing: false };
+      return user;
+    });
+
+    const sessionUser = getUserBySocketId(socketClient.id);
+    if (!sessionUser) return;
+
+    const roomId = sessionUser.roomId;
+    socketClient.broadcast
+      .to(roomId)
+      .emit(SocketEvents.UserTypingPause, { sessionUser });
+  });
+
   socketClient.on(SocketEvents.UserCursorMove, () => {});
   socketClient.on(SocketEvents.UserSendMessage, () => {});
   socketClient.on(SocketEvents.UserRequestDrawing, () => {});
